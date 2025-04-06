@@ -1,3 +1,5 @@
-nhlStat/curatedData/
-nhlStat/sourceData/
-nhlStat/.venv/
+curatedData/*
+.venv/
+sourceData/*
+src/nhlStat/__pycache__/*
+src/nhlStat/utils/__pycache__/*
