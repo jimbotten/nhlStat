@@ -1,5 +1,5 @@
-curatedData/*
+curatedData/
 .venv/
-sourceData/*
-src/nhlStat/__pycache__/*
-src/nhlStat/utils/__pycache__/*
+sourceData/
+__pycache__/
+.ruff_cache/

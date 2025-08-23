@@ -1,0 +1,34 @@
+[project]
+name = "nhlstat"
+version = "0.1.0"
+description = "Analyzes NHL stats from a public API"
+authors = [
+    {name = "jimbotten",email = "jimmmontgomery@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "certifi (==2025.1.31)",
+    "charset-normalizer (==3.4.1)",
+    "idna (==3.10)",
+    "numpy (==2.2.4)",
+    "pandas (==2.2.3)",
+    "python-dateutil (==2.9.0.post0)",
+    "pytz (==2025.2)",
+    "requests (==2.32.3)",
+    "six (==1.17.0)",
+    "tzdata (==2025.2)",
+    "urllib3 (==2.3.0)",
+    "ruff (>=0.12.10,<0.13.0)",
+    "pytest (>=8.4.1,<9.0.0)",
+    "python-dotenv (>=1.1.1,<2.0.0)",
+    "debugpy (>=1.8.16,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project.scripts]
+nhlstat = "nhlStat.__main__:handle_args"
