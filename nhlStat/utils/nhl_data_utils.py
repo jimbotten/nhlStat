@@ -27,11 +27,11 @@ def get_allGames():
     """
     homeGames = requests.get(
         conf.BASE_URL_EN
-        + "game?&cayenneExp=season=20242025 and homeTeamId=12 and gameType=02"
+        + "game?&cayenneExp=season=" + conf.SEASON + " and homeTeamId=" + str(conf.HOME_TEAM_ID) + " and gameType=02"
     )
     awayGames = requests.get(
         conf.BASE_URL_EN
-        + "game?&cayenneExp=season=20242025 and visitingTeamId=12 and gameType=2"
+        + "game?&cayenneExp=season=" + conf.SEASON + " and visitingTeamId=" + str(conf.HOME_TEAM_ID) + " and gameType=2"
     )
 
     data = pd.json_normalize(homeGames.json(), "data")

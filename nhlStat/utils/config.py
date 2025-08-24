@@ -15,3 +15,6 @@ BASE_URL_EN = os.getenv("BASE_URL_EN", "https://api.nhle.com/stats/rest/en/")
 NEW_URL = os.getenv("NEW_URL", "https://api-web.nhle.com/v1/")
 
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+
+SEASON = "20242025"
+HOME_TEAM_ID = 12
