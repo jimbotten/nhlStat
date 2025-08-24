@@ -1,42 +1,59 @@
 import pandas as pd
+"""
+This script provides functionality to analyze NHL game data from CSV files. 
+It includes two main functions:
+1. check_games_by_date(targetDate):
+  - Filters and displays games within a specified time window around a target date.
+  - Reads game data from '_games.csv'.
+  - Converts and formats the game dates for filtering and display.
+2. find_games(gameidentifier):
+  - Filters and displays play data for a specific game based on its game ID.
+  - Reads play data from '_plays.csv'.
+Usage:
+- Update the `target` variable with the desired date (e.g., "YYYY-MM-DD").
+- Update the `gameid` variable with the desired game ID.
+- Ensure the required CSV files ('_games.csv' and '_plays.csv') are present in the working directory.
+"""
 
 def check_games_by_date(targetDate):
+    from datetime import timezone
 
-  from datetime import timezone, datetime, timedelta
-  #targetDate = '2025-03-15'
-  time_window_days = 2  # Example: +/- 2 days
+    # targetDate = '2025-03-15'
+    time_window_days = 2  # Example: +/- 2 days
 
-  dfGames = pd.read_csv("_games.csv")
-  dfGames['date'] = pd.to_datetime(dfGames['startTime'])
+    dfGames = pd.read_csv("_games.csv")
+    dfGames["date"] = pd.to_datetime(dfGames["startTime"])
 
-  target_date = pd.to_datetime(targetDate)
-  target_date = target_date.replace(tzinfo=timezone.utc)
+    target_date = pd.to_datetime(targetDate)
+    target_date = target_date.replace(tzinfo=timezone.utc)
 
-  # Filter for records within the time window
-  df_filtered = dfGames[
-    (dfGames['date'] >= target_date - pd.Timedelta(days=time_window_days)) &
-    (dfGames['date'] <= target_date + pd.Timedelta(days=time_window_days))
-  ]
+    # Filter for records within the time window
+    df_filtered = dfGames[
+        (dfGames["date"] >= target_date - pd.Timedelta(days=time_window_days))
+        & (dfGames["date"] <= target_date + pd.Timedelta(days=time_window_days))
+    ]
 
-  #df_filtered.info()
-  # Format the 'date' column to month day year
-  df_filtered['dateFiltered'] = df_filtered.loc[:,'date'].dt.strftime('%m-%d-%Y')
+    # df_filtered.info()
+    # Format the 'date' column to month day year
+    df_filtered["dateFiltered"] = df_filtered.loc[:, "date"].dt.strftime("%m-%d-%Y")
 
-  print(df_filtered[['gameId','dateFiltered']].head())
-  # /()
+    print(df_filtered[["gameId", "dateFiltered"]].head())
+    # /()
+
 
 def find_games(gameidentifier):
-	allPlays = pd.read_csv('_plays.csv')
-	thisGame = allPlays.loc(allPlays['gameId']==gameidentifier)
-	thisGame.info()
-	#df_filtered = df.loc[df['Age'] > 25]
+    allPlays = pd.read_csv("_plays.csv")
+    thisGame = allPlays.loc(allPlays["gameId"] == gameidentifier)
+    thisGame.info()
+    # df_filtered = df.loc[df['Age'] > 25]
 
-target = '2025-03-15'
+
+target = "2025-03-15"
 check_games_by_date(target)
-gameid='202421061'
+gameid = "202421061"
 find_games(gameid)
 
-'''
+"""
 with open('games/2023020303.json') as json_file:
     data = json.load(json_file)
 dataGame = pd.json_normalize(data,record_path= ['plays'],max_level=0)
@@ -58,4 +75,4 @@ df
 basics.dataFrame
 #df[["team.name","team.triCode","result.description","about.ordinalNum","about.periodTime","result.strength.code","result.secondaryType"]]
 #rslt_df = data[(data['teams.away.team.id'].isin(options)) |
-'''
+"""

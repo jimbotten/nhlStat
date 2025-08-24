@@ -21,8 +21,8 @@
             "console": "integratedTerminal",
             "args": "--collect",
             "justMyCode": true,
-        },
-                {
+        },  
+        {
             "name": "nhlStat --process",
             "type": "debugpy",
             "request": "launch",
@@ -30,6 +30,15 @@
             "console": "integratedTerminal",
             "args": "--process",
             "justMyCode": true,
-        },        
+        },      
+        {
+            "name": "nhlStat play_review",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "nhlStat",
+            "console": "integratedTerminal",
+            "args": ["play_review","takeaway"],
+            "justMyCode": true,
+        },           
     ]
 }

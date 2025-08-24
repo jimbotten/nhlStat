@@ -1,7 +1,8 @@
 import argparse
 
 
-from nhlStat.utils import nhl_data_utils, nhl_cleanup
+from nhlStat.utils import nhl_data_utils
+from nhlStat.analysis import nhl_analysis  # Import nhl_analysis
 
 
 def handle_args():
@@ -39,12 +40,24 @@ def handle_args():
         help="include debug messsages",
     )
 
+    # Add the --command argument
+    parser.add_argument(
+        "command",
+        help="Run a command",
+    )
+
+    # Add the parameter argument
+    parser.add_argument(
+        "parameter",
+        help="Parameter for the command",
+    )
+
     # Parse the arguments
     args = parser.parse_args()
 
     if args.clean:
         # remove source data and curated data
-        nhl_cleanup.clear_folders()
+        nhl_data_utils.clear_folders()
         print("Cleaning data...")
 
     if args.collect:
@@ -59,7 +72,21 @@ def handle_args():
         nhl_data_utils.process_players()
         nhl_data_utils.process_plays()
 
-    print("Complete")
+    if args.showConfig:
+        print("TODO: show config")
+
+    if args.command:
+        if not hasattr(args, "parameter") or args.parameter is None:
+            raise ValueError(
+                "The 'parameter' argument is required when using 'command'."
+            )
+        else:
+            # Assuming the function for the command takes the parameter as an argument
+            if hasattr(nhl_analysis, args.command):
+                command_function = getattr(nhl_analysis, args.command)
+                command_function(args.parameter)
+            else:
+                raise ValueError(f"Unknown command: {args.command}")
 
 
 if __name__ == "__main__":
