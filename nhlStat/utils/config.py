@@ -13,3 +13,5 @@ FILENAME_ALL_PLAYS_AND_PLAYERS_PKL = os.getenv("FILENAME_ALL_PLAYS_AND_PLAYERS_P
 BASE_URL = os.getenv("BASE_URL", "https://api.nhle.com/stats/rest/")
 BASE_URL_EN = os.getenv("BASE_URL_EN", "https://api.nhle.com/stats/rest/en/")
 NEW_URL = os.getenv("NEW_URL", "https://api-web.nhle.com/v1/")
+
+BASE_PATH = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))

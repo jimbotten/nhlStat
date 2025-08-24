@@ -13,5 +13,23 @@
             "args": "--clean",
             "justMyCode": true,
         },
+       {
+            "name": "nhlStat --collect",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "nhlStat",
+            "console": "integratedTerminal",
+            "args": "--collect",
+            "justMyCode": true,
+        },
+                {
+            "name": "nhlStat --process",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "nhlStat",
+            "console": "integratedTerminal",
+            "args": "--process",
+            "justMyCode": true,
+        },        
     ]
 }

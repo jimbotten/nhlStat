@@ -1,10 +1,21 @@
 import glob
 import json
 import os
+import shutil
 
 import pandas as pd
 import requests
-from nhlStat.utils import config
+
+import nhlStat.utils.config as conf
+
+
+def clear_folders():
+    for folder in [conf.SUBFOLDER_SOURCE, conf.SUBFOLDER_CURATED]:
+        folder = os.path.join(conf.BASE_PATH, folder)
+        if not os.path.exists(folder):
+            raise FileNotFoundError(f"The folder path does not exist: {folder}")
+        shutil.rmtree(folder)
+        os.makedirs(folder)
 
 
 def get_allGames():
@@ -15,11 +26,11 @@ def get_allGames():
         pandas.DataFrame: A DataFrame containing information about all games.
     """
     homeGames = requests.get(
-        config.BASE_URL_EN
+        conf.BASE_URL_EN
         + "game?&cayenneExp=season=20242025 and homeTeamId=12 and gameType=02"
     )
     awayGames = requests.get(
-        config.BASE_URL_EN
+        conf.BASE_URL_EN
         + "game?&cayenneExp=season=20242025 and visitingTeamId=12 and gameType=2"
     )
 
@@ -30,7 +41,7 @@ def get_allGames():
     return allGames
 
 
-def get_path(fn, sf=config.SUBFOLDER_SOURCE):
+def get_path(fn, sf=conf.SUBFOLDER_SOURCE):
     """
     Constructs the file path for a given SUBFOLDER and FILENAME.
 
@@ -41,7 +52,7 @@ def get_path(fn, sf=config.SUBFOLDER_SOURCE):
     Returns:
         str: The full file path.
     """
-    file_path = os.path.join(config.PROJECT_ROOT, sf, fn)
+    file_path = os.path.join(conf.BASE_PATH, sf, fn)
     return file_path
 
 
@@ -49,7 +60,7 @@ def write_all_games():
     """
     Writes the IDs of all games to a file.
     """
-    with open(get_path(fn=config.FILENAME_ALL_GAMES), "w") as fp:
+    with open(get_path(fn=conf.FILENAME_ALL_GAMES), "w") as fp:
         allGames = get_allGames()
         for item in allGames.id:
             fp.write(f"{item}\n")
@@ -59,7 +70,7 @@ def get_play_by_play():
     """
     Retrieves and saves play-by-play data for each game.
     """
-    with open(get_path(fn=config.FILENAME_ALL_GAMES), "r") as fp:
+    with open(get_path(fn=conf.FILENAME_ALL_GAMES), "r") as fp:
         games = []
         for line in fp:
             x = line[:-1]
@@ -71,7 +82,7 @@ def get_play_by_play():
         else:
             print(f"didnt find {gameNum}.json")
             gameRes = requests.get(
-                f"{config.NEW_URL}gamecenter/{gameNum}/play-by-play"
+                f"{conf.NEW_URL}gamecenter/{gameNum}/play-by-play"
             ).json()
             json_formatted_str = json.dumps(gameRes, indent=2)
             with open(get_path(fn=gameNum + ".json"), "w") as outfile:
@@ -115,15 +126,28 @@ def write_players():
 
     players_df.set_index("playerId", inplace=True)
     print("About to CSV out")
-    players_df.to_csv(
-        get_path(sf=config.SUBFOLDER_CURATED, fn=config.FILENAME_ALL_PLAYERS)
-    )
+    players_df.to_csv(get_path(sf=conf.SUBFOLDER_CURATED, fn=conf.FILENAME_ALL_PLAYERS))
     print("Completed csv out")
 
 
 def write_all_plays():
     """
     Builds and saves a CSV and pickle file of all plays and player information.
+    This function performs the following steps:
+    1. Initializes an empty DataFrame to store play data.
+    2. Iterates over all JSON files in the specified directory:
+        - Reads and parses each JSON file.
+        - Normalizes the "plays" data into a DataFrame.
+        - Adds a "game" column derived from the file name.
+        - Concatenates the data into a single DataFrame.
+        - Handles JSON decoding errors gracefully.
+    3. Resets the index of the DataFrame and renames columns for consistency.
+    4. Saves the DataFrame as a CSV file.
+    5. Reads a CSV file containing player information, removes duplicates, and merges it with the plays DataFrame.
+    6. Saves the merged DataFrame as a pickle file for future use.
+    Note:
+    - The function relies on helper functions like `get_path` and configuration constants from `config`.
+    - Error handling is implemented for JSON decoding issues.
     """
     df = pd.DataFrame()
     for file in glob.glob(get_path(fn="*.json")):
@@ -139,18 +163,21 @@ def write_all_plays():
     df = df.reset_index(drop=True)
     df.rename(columns={"details.playerId": "playerId"}, inplace=True)
 
+    # save all players to a curated csv
     df.to_csv(
-        get_path(sf=config.SUBFOLDER_CURATED, fn=config.FILENAME_ALL_PLAYS), index=False
+        get_path(sf=conf.SUBFOLDER_CURATED, fn=conf.FILENAME_ALL_PLAYS), index=False
     )
-    players_df = pd.read_csv(get_path(fn=config.FILENAME_ALL_PLAYERS))
+    # combine the curated player with the play they performed
+    players_df = pd.read_csv(
+        get_path(sf=conf.SUBFOLDER_CURATED, fn=conf.FILENAME_ALL_PLAYERS)
+    )
     players_df.drop_duplicates(inplace=True)
     merged_df = pd.merge(df, players_df, on="playerId", how="left")
     print(merged_df.head())
     print("writing all plays and players pickle")
+    # save as a pickle
     merged_df.to_pickle(
-        get_path(
-            sf=config.SUBFOLDER_CURATED, fn=config.FILENAME_ALL_PLAYS_AND_PLAYERS_PKL
-        )
+        get_path(sf=conf.SUBFOLDER_CURATED, fn=conf.FILENAME_ALL_PLAYS_AND_PLAYERS_PKL)
     )
 
 
@@ -320,24 +347,24 @@ def load_all_plays_data_from_json(playType):
 def process_games():
     dfGames = load_games_data_from_json()
     dfGames.sort_values(by="startTime", inplace=True)
-    dfGames.to_csv(get_path(sf=config.SUBFOLDER_CURATED, fn="_games.csv"))
+    dfGames.to_csv(get_path(sf=conf.SUBFOLDER_CURATED, fn="_games.csv"))
 
 
 def process_players():
     dfPlayers = load_players_data_from_json()
-    dfPlayers.to_csv(get_path(sf=config.SUBFOLDER_CURATED, fn="_players.csv"))
+    dfPlayers.to_csv(get_path(sf=conf.SUBFOLDER_CURATED, fn="_players.csv"))
 
 
 def process_plays():
     df = load_plays_data_from_json("")
-    df.to_csv(get_path(sf=config.SUBFOLDER_CURATED, fn="_plays.csv"))
+    df.to_csv(get_path(sf=conf.SUBFOLDER_CURATED, fn="_plays.csv"))
     df = load_plays_data_from_json("penalty")
-    df.to_csv(get_path(sf=config.SUBFOLDER_CURATED, fn="_plays_penalties.csv"))
+    df.to_csv(get_path(sf=conf.SUBFOLDER_CURATED, fn="_plays_penalties.csv"))
     df = load_plays_data_from_json("goal")
-    df.to_csv(get_path(sf=config.SUBFOLDER_CURATED, fn="_plays_goals.csv"))
+    df.to_csv(get_path(sf=conf.SUBFOLDER_CURATED, fn="_plays_goals.csv"))
     df = load_all_plays_data_from_json("penalty")
-    df.to_csv(get_path(sf=config.SUBFOLDER_CURATED, fn="_plays_all_penalties.csv"))
+    df.to_csv(get_path(sf=conf.SUBFOLDER_CURATED, fn="_plays_all_penalties.csv"))
     df = load_plays_data_from_json("shot-on-goal")
-    df.to_csv(get_path(sf=config.SUBFOLDER_CURATED, fn="_plays_shot_on_goal.csv"))
+    df.to_csv(get_path(sf=conf.SUBFOLDER_CURATED, fn="_plays_shot_on_goal.csv"))
     df = load_plays_data_from_json("missed-shot")
-    df.to_csv(get_path(sf=config.SUBFOLDER_CURATED, fn="_plays_missed_shot.csv"))
+    df.to_csv(get_path(sf=conf.SUBFOLDER_CURATED, fn="_plays_missed_shot.csv"))
